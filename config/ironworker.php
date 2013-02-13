@@ -11,7 +11,8 @@
 $config['ironworker'] = array(
 	'project_id' => '',
 	'token' => '',
-	'_api_url' => 'https://worker-aws-us-east-1.iron.io/2',
+	'_api_url' => 'https://worker-aws-us-east-1.iron.io',
+	'_api_version' => '2',
 	'_project_url' => '/projects',
 	'_code_url' => '/codes',
 	'_task_url' => '/tasks',
