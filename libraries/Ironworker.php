@@ -531,20 +531,56 @@ class Ironworker {
      * @return array
      */
 	public function get_projects() {
-        $result = $this->call('GET','projects');
+		$url = 'projects';		
+        $result = $this->call('GET',$url);
 		return $result;
     }
 	
 	/**
      * Get Projects Details
      * 
-     * Get details of selected projects
+     * Get details of selected project
      * 
      * @return array
      */
 	public function get_projectdetails(){
-        $result = $this->call('GET','projects/'.$this->project_id);
-		return $result;
+		$url = 'projects/'.$this->project_id;
+        $details = $this->call('GET',$url);
+		return $details;
+    }
+	
+	
+	/**
+     * Get Codes
+     * 
+     * Get list of code packages
+     * 
+     * @return array
+     */
+	public function get_codes($page = 0, $per_page = 30){
+        $url = 'projects/'.$this->project_id.'/codes';
+        $params = array(
+            'page'     => $page,
+            'per_page' => $per_page
+        );
+        $codes = $this->call('GET',$url,$params);
+        return $codes;
+    }
+	
+	/**
+     * Get Code Package Details
+     * 
+     * Get details of selected code package
+     * 
+     * @return array
+     */
+	public function get_codedetails($code_id){
+        if (empty($code_id)){
+            throw new InvalidArgumentException("Please set code_id");
+        }
+        $url = 'projects/'.$this->project_id.'/codes/'.$code_id;
+        $details = $this->call('GET',$url);
+		return $details;
     }
 	
 	/**
@@ -559,15 +595,70 @@ class Ironworker {
      * @return mixed
      */
     public function get_tasks($page = 0, $per_page = 30, $options = array()){
+    	$url = 'projects/'.$this->project_id.'/tasks';
         $params = array(
             'page'     => $page,
             'per_page' => $per_page
         );
         $params = array_merge($options, $params);
-        $tasks = $this->call('GET', 'projects/'.$this->project_id.'/tasks', $params);
+        $tasks = $this->call('GET', $url, $params);
         return $tasks;
     }
 	
+	/**
+     * Get Tasks Details
+     * 
+     * Get details of selected task
+     * 
+	 * @param int $task_id
+     * @return array
+     */
+	public function get_taskdetails($task_id){
+        if (empty($task_id)){
+            throw new InvalidArgumentException("Please set task_id");
+        }
+		$url = 'projects/'.$this->project_id.'/tasks/'.$task_id;
+        $details = $this->call('GET', $url);
+		return $details;
+    }
+	
+	/**
+     * Get Scheduled Tasks
+	 * 
+	 * Get information about all schedules for project
+     *
+     * @param int $page
+     * @param int $per_page
+     * @return mixed
+     */
+    public function get_scheduledtasks($page = 0, $per_page = 30){
+        $url = 'projects/'.$this->project_id.'/schedules';
+        $params = array(
+            'page'     => $page,
+            'per_page' => $per_page
+        );
+        $schedules = $result = $this->call('GET', $url, $params);
+        return $schedules;
+    }
+	
+	/**
+     * Get Schedule Task Details
+	 * 
+	 * Get information about schedule
+     *
+     * @param string $schedule_id Schedule ID
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+    public function get_scheduledetails($schedule_id){
+        if (empty($schedule_id)){
+            throw new InvalidArgumentException("Please set schedule_id");
+        }
+        $url = 'projects/'.$this->project_id.'/schedules/'.$schedule_id;
+
+        $details = $result = $this->call('GET', $url);
+		return $details;
+    }
 	
 }
 
