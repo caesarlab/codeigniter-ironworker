@@ -650,7 +650,7 @@ class Ironworker {
      * @return mixed
      * @throws InvalidArgumentException
      */
-    public function get_scheduledetails($schedule_id){
+    public function get_scheduletaskdetails($schedule_id){
         if (empty($schedule_id)){
             throw new InvalidArgumentException("Please set schedule_id");
         }
