@@ -13,6 +13,7 @@ class Ironworker {
 	protected $project_id,
 		$token,
 		$_api_url,
+		$_api_version,
 		$_project_url,
 		$_code_url,
 		$_task_url,
@@ -475,7 +476,7 @@ class Ironworker {
      * @return array
      */
 	public function call($method, $path, $arrArgs = null, $debug = false) {
-        $arrResponse = $this->_http_request(strtoupper($method), $this->_api_url.$this->_project_url.'/'.$this->project_id.'/'.$path, $arrArgs);
+        $arrResponse = $this->_http_request(strtoupper($method), $this->_api_url.'/'.$this->_api_version.'/'.$path, $arrArgs);
         
         if(is_null($arrResponse)) {
             return array();
@@ -505,6 +506,69 @@ class Ironworker {
         
         return $error;
     }
+	
+	/**
+     * Set Project ID
+     * 
+     * Sets projectid
+     * 
+     * @param string $projectid
+     */
+	public function set_projectid($projectid) {
+        if (!empty($projectid)){
+          $this->project_id = $projectid;
+        }
+        if (empty($this->projectid)){
+            throw new InvalidArgumentException("Please set project_id");
+        }
+    }
+	
+	/**
+     * Get Projects
+     * 
+     * Get list of projects
+     * 
+     * @return array
+     */
+	public function get_projects() {
+        $result = $this->call('GET','projects');
+		return $result;
+    }
+	
+	/**
+     * Get Projects Details
+     * 
+     * Get details of selected projects
+     * 
+     * @return array
+     */
+	public function get_projectdetails(){
+        $result = $this->call('GET','projects/'.$this->project_id);
+		return $result;
+    }
+	
+	/**
+     * List Tasks
+     *
+     * @param int $page Page. Default is 0, maximum is 100.
+     * @param int $per_page The number of tasks to return per page. Default is 30, maximum is 100.
+     * @param array $options Optional URL Parameters
+     * Filter by Status: the parameters queued, running, complete, error, cancelled, killed, and timeout will all filter by their respective status when given a value of 1. These parameters can be mixed and matched to return tasks that fall into any of the status filters. If no filters are provided, tasks will be displayed across all statuses.
+     * - "from_time" Limit the retrieved tasks to only those that were created after the time specified in the value. Time should be formatted as the number of seconds since the Unix epoch.
+     * - "to_time" Limit the retrieved tasks to only those that were created before the time specified in the value. Time should be formatted as the number of seconds since the Unix epoch.
+     * @return mixed
+     */
+    public function get_tasks($page = 0, $per_page = 30, $options = array()){
+        $params = array(
+            'page'     => $page,
+            'per_page' => $per_page
+        );
+        $params = array_merge($options, $params);
+        $tasks = $this->call('GET', 'projects/'.$this->project_id.'/tasks', $params);
+        return $tasks;
+    }
+	
+	
 }
 
 class Ironworker_Exception extends Exception {
