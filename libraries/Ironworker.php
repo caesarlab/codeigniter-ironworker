@@ -71,7 +71,7 @@ class Ironworker {
      * Allows models to access CI's loaded classes using the same
      * syntax as controllers.
      *
-     * @param string
+     * @param string $key
      * @access private
      */
     public function __get($key) {
@@ -296,7 +296,7 @@ class Ironworker {
                     break;
 
                 case 'DELETE':
-                    $arrReturn = null;
+                    $arrReturn = $this->_delete($url, $arrParams);
                     break;
             }
         
@@ -371,6 +371,35 @@ class Ironworker {
         
         $this->_init_connection($url);
         curl_setopt($this->_curl, CURLOPT_POST, 1);
+        curl_setopt($this->_curl, CURLOPT_POSTFIELDS, $post);
+        
+        $response = $this->_add_curl($url, $arrParams);
+        
+        return $response;
+    }
+	
+	/**
+     * Delete
+     * 
+     * Performs a DELETE request
+     * 
+     * @param string $url
+     * @param array $arrParams
+     * @return array
+     */
+	protected function _delete($url, $arrParams) {
+		$post = '';
+        if(is_array($arrParams['request']) && count($arrParams['request']) > 0 ) {
+            foreach($arrParams['request'] as $k => $v) {
+                $post .= "{$k}={$v}&";
+            }
+            
+            $post = substr($post, 0, -1);
+            
+        }
+        
+        $this->_init_connection($url);
+        curl_setopt($this->_curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
         curl_setopt($this->_curl, CURLOPT_POSTFIELDS, $post);
         
         $response = $this->_add_curl($url, $arrParams);
@@ -572,6 +601,7 @@ class Ironworker {
      * 
      * Get details of selected code package
      * 
+	 * @param string $code_id
      * @return array
      */
 	public function get_codedetails($code_id){
@@ -584,10 +614,23 @@ class Ironworker {
     }
 	
 	/**
+     * Delete Code Package
+     * 
+     * Get details of selected code package
+     * 
+	 * @param string $code_id
+     * @return array
+     */
+	public function delete_code($code_id){
+        $url = "projects/{$this->project_id}/codes/$code_id";
+        return $this->apiCall(self::DELETE, $url);
+    }
+	
+	/**
      * List Tasks
      *
-     * @param int $page Page. Default is 0, maximum is 100.
-     * @param int $per_page The number of tasks to return per page. Default is 30, maximum is 100.
+     * @param integer $page Page. Default is 0, maximum is 100.
+     * @param integer $per_page The number of tasks to return per page. Default is 30, maximum is 100.
      * @param array $options Optional URL Parameters
      * Filter by Status: the parameters queued, running, complete, error, cancelled, killed, and timeout will all filter by their respective status when given a value of 1. These parameters can be mixed and matched to return tasks that fall into any of the status filters. If no filters are provided, tasks will be displayed across all statuses.
      * - "from_time" Limit the retrieved tasks to only those that were created after the time specified in the value. Time should be formatted as the number of seconds since the Unix epoch.
@@ -610,7 +653,7 @@ class Ironworker {
      * 
      * Get details of selected task
      * 
-	 * @param int $task_id
+	 * @param string $task_id
      * @return array
      */
 	public function get_taskdetails($task_id){
@@ -627,8 +670,8 @@ class Ironworker {
 	 * 
 	 * Get information about all schedules for project
      *
-     * @param int $page
-     * @param int $per_page
+     * @param integer $page
+     * @param integer $per_page
      * @return mixed
      */
     public function get_scheduledtasks($page = 0, $per_page = 30){
