@@ -623,7 +623,7 @@ class Ironworker {
      */
 	public function delete_code($code_id){
         $url = "projects/{$this->project_id}/codes/$code_id";
-        return $this->apiCall(self::DELETE, $url);
+        return $this->call('DELETE', $url);
     }
 	
 	/**
@@ -649,6 +649,39 @@ class Ironworker {
     }
 	
 	/**
+     * 
+	 * Queues already uploaded worker
+     *
+     * @param string $name Package name
+     * @param array $payload Payload for task
+     * @param array $options Optional parameters:
+     *  - "priority" priority queue to run the job in (0, 1, 2). 0 is default.
+     *  - "timeout" maximum runtime of your task in seconds. Maximum time is 3600 seconds (60 minutes). Default is 3600 seconds (60 minutes).
+     *  - "delay" delay before actually queueing the task in seconds. Default is 0 seconds.
+     * @return string Created Task ID
+     */
+    public function post_task($name, $payload = array(), $options = array()){
+        $url = 'projects/'.$this->project_id.'/tasks';
+
+        $request = array(
+            'tasks' => array(
+                array(
+                    "name"      => $name,
+                    "code_name" => $name,
+                    'payload' => json_encode($payload),
+                )
+            )
+        );
+
+        foreach ($options as $k => $v){
+            $request['tasks'][0][$k] = $v;
+        }
+
+        $results = $this->call('POST', $url, $request);
+        return $results;
+    }
+	
+	/**
      * Get Tasks Details
      * 
      * Get details of selected task
@@ -664,6 +697,24 @@ class Ironworker {
         $details = $this->call('GET', $url);
 		return $details;
     }
+	
+	/**
+     * Cancel task.
+     *
+     * @param string $task_id Task ID
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+    public function cancel_task($task_id){
+        if (empty($task_id)){
+            throw new InvalidArgumentException("Please set task_id");
+        }
+        $url = 'projects/'.$this->project_id.'/tasks/'.$task_id.'/cancel';
+        $request = array();
+
+        $result = $this->call('POST', $url, $request);
+        return $result;
+	}
 	
 	/**
      * Get Scheduled Tasks
@@ -685,6 +736,36 @@ class Ironworker {
     }
 	
 	/**
+     * Schedule a task
+     *
+     * @param string $name
+     * @param array $options options contain:
+     *   start_at OR delay — required - start_at is time of first run. Delay is number of seconds to wait before starting.
+     *   run_every         — optional - Time in seconds between runs. If omitted, task will only run once.
+     *   end_at            — optional - Time tasks will stop being enqueued. (Should be a Time or DateTime object.)
+     *   run_times         — optional - Number of times to run task. For example, if run_times: is 5, the task will run 5 times.
+     *   priority          — optional - Priority queue to run the job in (0, 1, 2). p0 is default. Run at higher priorities to reduce time jobs may spend in the queue once they come off schedule. Same as priority when queuing up a task.
+     * @param array $payload
+     * @return mixed
+     */
+    public function post_scheduledtask($name, $options, $payload = array()){
+        $url = 'projects/'.$this->project_id.'/schedules';
+        $shedule = array(
+           'name' => $name,
+           'code_name' => $name,
+           'payload' => json_encode($payload),
+        );
+        $request = array(
+           'schedules' => array(
+               array_merge($shedule, $options)
+           )
+        );
+
+        $results = $this->call('POST', $url, $request);
+        return $results;
+    }
+	
+	/**
      * Get Schedule Task Details
 	 * 
 	 * Get information about schedule
@@ -701,6 +782,25 @@ class Ironworker {
 
         $details = $result = $this->call('GET', $url);
 		return $details;
+    }
+	
+	/**
+     * Delete Scheduled Task
+	 * 
+	 * Delete selected scheduled task
+     *
+     * @param string $schedule_id Schedule ID
+     * @return mixed
+     * @throws InvalidArgumentException
+     */
+	public function cancel_scheduledtask($schedule_id){
+        $url = 'projects/'.$this->project_id.'/schedules/'.$schedule_id.'/cancel';
+
+        $request = array(
+            'schedule_id' => $schedule_id
+        );
+
+        return $this->call('POST', $url, $request);
     }
 	
 }
